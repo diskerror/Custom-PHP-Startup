@@ -40,6 +40,8 @@ foreach ( $argv as $path ) {
 		continue;
 	}
 
+	fwrite(STDOUT, 'Loading from "' . $path . '".' . PHP_EOL);
+
 	$iter = new RecursiveIteratorIterator(
 		new RecursiveDirectoryIterator($realPath, RecursiveDirectoryIterator::SKIP_DOTS)
 	);
@@ -108,11 +110,11 @@ fwrite($fp, '
 
 #include "AutoloadValues.h"
 
-const std::unordered_map<std::string, const char *> AutoloadValues::_val = {
+const std::unordered_map<std::string, const char *, Hash> AutoloadValues::_val = {
 ');
 
 foreach ( $class2File as $c=>$p ) {
-	fwrite( $fp, sprintf("\t{\"%s\", \"%s\"},\n", $c, $p) );
+	fwrite( $fp, sprintf("\t{\"%s\", \"%s\"},\n", addslashes($c), $p) );
 }
 
 //	remove last comma
@@ -121,4 +123,4 @@ fseek($fp, -2, SEEK_END);
 fwrite($fp, "\n};\n");
 fclose($fp);
 
-// echo PHP_EOL;
+// fwrite(STDOUT, PHP_EOL);

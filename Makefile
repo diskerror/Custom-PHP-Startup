@@ -1,5 +1,5 @@
-# Replace "my_startup" with your own custom extension name.
-EXTENSION_NAME	= my_startup
+# Replace "project" with your own custom extension name.
+EXTENSION_NAME	= project
 
 PHPE			= /etc/php5
 EXTENSION_DIR	= $(shell php-config --extension-dir)
@@ -18,20 +18,22 @@ LDLIBS = \
 CPP	= $(COMPILER) $(COMPILER_FLAGS) -include precompile.hpp $< -o $@
 
 OBJECTS = \
+	obj/MurmurHash3.o \
+	obj/Hash.o \
 	obj/AutoloadValues.o \
 	obj/AutoloadGet.o \
 	obj/main.o
 
-# Locations of all possible PHP classes used in a project.
+# Locations of all possible PHP classes used in a project or application.
 # Below is a possible layout of a ZF1 application
-#    with an additional Composer "vendor" directory
-#    and the parent directory of this file is in the ZF1 "docs" directory.
+#    with an additional Composer "vendor" directory.
+#    Paths may be absolute or relative to this file.
 PHP_SEARCH_PATHS = \
 	/var/www/ZendFramework/library/Zend \
 	/var/www/ZendFramework/extras/library/ZendX \
-	../../application \
-	../../library \
-	../../vendor
+	/var/www/project/application \
+	/var/www/project/library \
+	/var/www/project/vendor
 
 
 ################################################################################
@@ -52,10 +54,16 @@ obj/precompile.o: precompile.hpp
 AutoloadValues.cp: Makefile getClassFiles.php
 	./getClassFiles.php $(PHP_SEARCH_PATHS)
 
-obj/AutoloadGet.o: AutoloadGet.cp AutoloadValues.h
+obj/MurmurHash3.o: MurmurHash3.cpp MurmurHash3.h
 	$(CPP)
 
-obj/AutoloadValues.o: AutoloadValues.cp AutoloadValues.h
+obj/Hash.o: Hash.cp Hash.h MurmurHash3.h
+	$(CPP)
+
+obj/AutoloadGet.o: AutoloadGet.cp AutoloadValues.h Hash.h
+	$(CPP)
+
+obj/AutoloadValues.o: AutoloadValues.cp AutoloadValues.h Hash.h
 	$(CPP)
 
 obj/main.o: main.cp AutoloadValues.h
@@ -84,8 +92,8 @@ uninstall:
 	find $(PHPE) -name $(INI) | xargs rm -f
 		
 clean:
-	rm -f $(EXTENSION) $(OBJECTS)
+	rm -f $(EXTENSION) $(OBJECTS) AutoloadValues.cp
 
 # remove all objects including precompiled header
 cleanall:
-	rm -rf $(EXTENSION) obj/* obj
+	rm -rf $(EXTENSION) obj/* obj AutoloadValues.cp

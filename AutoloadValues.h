@@ -8,11 +8,13 @@
 #define DISKERROR_AUTOLOADVALUES_H
 #pragma once
 
+#include "Hash.h"
+
 class AutoloadValues
 {
 protected:
 
-	static const std::unordered_map<std::string, const char *> _val;
+	static const std::unordered_map<std::string, const char *, Hash> _val;
 
 
 public:
