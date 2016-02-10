@@ -4,13 +4,13 @@
 
 */
 
-#ifndef DISKERROR_AUTOLOADVALUES_H
-#define DISKERROR_AUTOLOADVALUES_H
+#ifndef DISKERROR_AUTOLOAD_H
+#define DISKERROR_AUTOLOAD_H
 #pragma once
 
 #include "Hash.h"
 
-class AutoloadValues
+class Autoload
 {
 protected:
 
@@ -19,8 +19,8 @@ protected:
 
 public:
 	
-	static Php::Value get(Php::Parameters &);
+	static Php::Value getFile(Php::Parameters &);
 	
 };
 
-#endif	//	DISKERROR_AUTOLOADVALUES_H
+#endif	//	DISKERROR_AUTOLOAD_H

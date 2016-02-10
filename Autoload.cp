@@ -4,12 +4,12 @@
 
 */
 
-#include "AutoloadValues.h"
+#include "Autoload.h"
 
 using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-Php::Value AutoloadValues::get(Php::Parameters &params)
+Php::Value Autoload::getFile(Php::Parameters &params)
 {
 	string className = params[0];
 	

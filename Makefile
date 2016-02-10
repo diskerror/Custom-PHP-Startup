@@ -1,6 +1,22 @@
-# Replace "project" with your own custom extension name.
+# Replace "project" with your own unique custom extension name.
+# This will also be the namespace of some items in this extension.
 EXTENSION_NAME	= project
 
+# Locations of all possible PHP classes used in your project or application.
+# Below is a possible layout of a ZF1 application named "project"
+#    with an additional Composer "vendor" directory.
+#    [[ Composer autoload classes are ignored ]]
+# Paths may be absolute or relative to this file.
+# Bad paths will be skipped and message will be displayed.
+PHP_SEARCH_PATHS = \
+	/var/www/ZendFramework/library/Zend \
+	/var/www/ZendFramework/extras/library/ZendX \
+	/var/www/$(EXTENSION_NAME)/application \
+	/var/www/$(EXTENSION_NAME)/library \
+	/var/www/$(EXTENSION_NAME)/vendor
+
+
+################################################################################
 PHPE			= /etc/php5
 EXTENSION_DIR	= $(shell php-config --extension-dir)
 EXTENSION 		= $(EXTENSION_NAME).so
@@ -21,19 +37,8 @@ OBJECTS = \
 	obj/MurmurHash3.o \
 	obj/Hash.o \
 	obj/AutoloadValues.o \
-	obj/AutoloadGet.o \
+	obj/Autoload.o \
 	obj/main.o
-
-# Locations of all possible PHP classes used in a project or application.
-# Below is a possible layout of a ZF1 application
-#    with an additional Composer "vendor" directory.
-#    Paths may be absolute or relative to this file.
-PHP_SEARCH_PATHS = \
-	/var/www/ZendFramework/library/Zend \
-	/var/www/ZendFramework/extras/library/ZendX \
-	/var/www/project/application \
-	/var/www/project/library \
-	/var/www/project/vendor
 
 
 ################################################################################
@@ -51,6 +56,7 @@ obj/precompile.o: precompile.hpp
 	$(COMPILER) $(COMPILER_FLAGS) $< -o $@
 
 # Create class-to-file map for this machine/instance.
+#    Depends on data in this file.
 AutoloadValues.cp: Makefile getClassFiles.php
 	./getClassFiles.php $(PHP_SEARCH_PATHS)
 
@@ -60,7 +66,7 @@ obj/MurmurHash3.o: MurmurHash3.cpp MurmurHash3.h
 obj/Hash.o: Hash.cp Hash.h MurmurHash3.h
 	$(CPP)
 
-obj/AutoloadGet.o: AutoloadGet.cp AutoloadValues.h Hash.h
+obj/Autoload.o: Autoload.cp AutoloadValues.h Hash.h
 	$(CPP)
 
 obj/AutoloadValues.o: AutoloadValues.cp AutoloadValues.h Hash.h
@@ -71,25 +77,36 @@ obj/main.o: main.cp AutoloadValues.h
 
 
 ################################################################################
-# Installation and cleanup. (tested on Debian 8)
+# Installation and cleanup. (tested on Debian 8 and CentOS 6)
 install:
 	cp -f $(EXTENSION) $(EXTENSION_DIR)
 	chmod 644 $(EXTENSION_DIR)/$(EXTENSION)
-	echo "extension = "$(EXTENSION)"\n" > $(PHPE)/mods-available/$(INI)
-	chmod 644 $(PHPE)/mods-available/$(INI)
-	if [ -d $(PHPE)/apache2/conf.d/ ]; then \
-		ln -sf $(PHPE)/mods-available/$(INI) $(PHPE)/apache2/conf.d/;\
+	if [ -d /etc/php5/mods-available/ ]; then \
+		echo "extension = "$(EXTENSION)"\n" > /etc/php5/mods-available/$(INI); \
+		chmod 644 /etc/php5/mods-available/$(INI); \
+		if [ -d /etc/php5/apache2/conf.d/ ]; then \
+			ln -sf /etc/php5/mods-available/$(INI) /etc/php5/apache2/conf.d/; \
+		fi; \
+		if [ -d /etc/php5/cli/conf.d/ ]; then \
+			ln -sf /etc/php5/mods-available/$(INI) /etc/php5/cli/conf.d/; \
+		fi; \
+		if [ -d /etc/php5/cgi/conf.d/ ]; then \
+			ln -sf /etc/php5/mods-available/$(INI) /etc/php5/cgi/conf.d/; \
+		fi; \
 	fi
-	if [ -d $(PHPE)/cli/conf.d/ ]; then \
-		ln -sf $(PHPE)/mods-available/$(INI) $(PHPE)/cli/conf.d/;\
+	if [ -d /etc/php.d/ ]; then \
+		echo "extension = "$(EXTENSION)"\n" > /etc/php.d/$(INI);\
+		chmod 644 /etc/php.d/$(INI);\
 	fi
-	if [ -d $(PHPE)/cgi/conf.d/ ]; then \
-		ln -sf $(PHPE)/mods-available/$(INI) $(PHPE)/cgi/conf.d/;\
+	if [ -d /etc/php-zts.d/ ]; then \
+		echo "extension = "$(EXTENSION)"\n" > /etc/php-zts.d/$(INI);\
+		chmod 644 /etc/php-zts.d/$(INI);\
 	fi
 
 uninstall:
 	rm -f $(EXTENSION_DIR)/$(EXTENSION)
-	find $(PHPE) -name $(INI) | xargs rm -f
+	find /etc/php5 -name $(INI) | xargs rm -f
+	rm -f /etc/php.d/$(INI) /etc/php-zts.d/$(INI)
 		
 clean:
 	rm -f $(EXTENSION) $(OBJECTS) AutoloadValues.cp
