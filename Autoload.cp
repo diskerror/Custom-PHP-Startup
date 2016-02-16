@@ -11,14 +11,17 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 Php::Value Autoload::getFile(Php::Parameters &params)
 {
-	string className = params[0];
+	const char* className = params[0];
 	
-	auto search = _val.find(className);
-	
-	if ( search != _val.end() ) {
-		return (Php::Value) search->second;
+	try {
+		return _val.at(className);
 	}
-	else {
+	catch (std::exception e) {
 		return "";
 	}
+}
+
+Php::Value Autoload::collisions()
+{
+	return (int32_t) (phpMembers - _val.size());
 }

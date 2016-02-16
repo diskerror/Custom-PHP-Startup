@@ -31,6 +31,15 @@ if ( !defined('T_TRAIT') ) {
 	define('T_TRAIT', -1);
 }
 
+//	get include paths, except "."
+$paths = explode(PATH_SEPARATOR, get_include_path());
+foreach ( $paths as &$p ) {
+	if ( $p === '.' ) {
+		unset($p);
+		break;
+	}
+}
+
 $class2File = [];
 
 foreach ( $argv as $path ) {
@@ -47,13 +56,19 @@ foreach ( $argv as $path ) {
 	);
 
 	foreach ($iter as $f) {
-		if ( strcasecmp(pathinfo($f, PATHINFO_EXTENSION), 'php') !== 0 ) {
+		//	Only process files with the 'php' extension AND
+		//		only if they are NOT in a PhpUnit nor a /Tests/ path (case insensitive).
+		if (
+			strcasecmp(pathinfo($f, PATHINFO_EXTENSION), 'php') !== 0 ||
+			stripos($f->__toString(), 'phpunit') !== false ||
+			stripos($f->__toString(), '/Tests/') !== false
+		) {
 			continue;
 		}
 
 		$tokens = token_get_all( file_get_contents($f) );
 
-		//	Reset namespace for each file.
+		//	Reset namespace for each file whether it's used in a file or not.
 		$namespace = '';
 		$count = count($tokens);
 		for ($i = 0; $i < $count; ++$i) {
@@ -63,6 +78,7 @@ foreach ( $argv as $path ) {
 
 			switch ($tokens[$i][0]) {
 				case T_NAMESPACE:
+				$namespace = ''; //	new namespace is started.
 				while ( $tokens[$i][0]!==T_STRING && $tokens[$i][0]!==T_NS_SEPARATOR ) {
 					++$i;	//	skip next token («whitespace», «comment», «;»)
 				}
@@ -82,11 +98,17 @@ foreach ( $argv as $path ) {
 				}
 				case T_INTERFACE:
 				// Abstract class, class, interface or trait found
-				for ($i++; $i < $count; $i++) {
-					//	get only the next string, and it does not start with 	v
-					if (T_STRING === $tokens[$i][0] && strpos($namespace, 'Composer') !== 0 && strpos($tokens[$i][1], 'Composer') !== 0 ) {
-						$class2File[ $namespace . $tokens[$i][1] ] = $f->__toString();
-						break;
+				if ( strpos($namespace, 'Composer') !== 0 ) {
+					for ($i++; $i < $count; $i++) {
+						//	get only the next string, and it does not start with 	v
+						if (
+							T_STRING === $tokens[$i][0] &&
+							strpos($tokens[$i][1], 'Composer') !== 0 &&
+							strpos($tokens[$i][1], 'stdClass') !== 0
+						) {
+							$class2File[ $namespace . $tokens[$i][1] ] = $f->__toString();
+							break;
+						}
 					}
 				}
 				break;
@@ -99,6 +121,22 @@ foreach ( $argv as $path ) {
 }
 
 ksort($class2File, SORT_STRING);
+// uksort($class2File, function($a, $b){
+// 	$i = strlen($a);
+// 	$j = strlen($b);
+// 	while ( $i && $j ) {
+// 		$i--; $j--;
+// 		if ($a[$i] > $b[$j])
+// 			return 1;
+// 		if ($a[$i] < $b[$j])
+// 			return -1;
+// 	}
+// 	if ( $i )
+// 		return 1;
+// 	if ( $j )
+// 		return -1;
+// 	return 0;
+// });
 
 // var_export($class2File);
 
@@ -110,7 +148,7 @@ fwrite($fp, '
 
 #include "Autoload.h"
 
-const std::unordered_map<std::string, const char *, Hash> Autoload::_val = {
+const autoloadMap Autoload::_val = {
 ');
 
 foreach ( $class2File as $c=>$p ) {
@@ -121,6 +159,8 @@ foreach ( $class2File as $c=>$p ) {
 fseek($fp, -2, SEEK_END);
 
 fwrite($fp, "\n};\n");
+fwrite($fp, 'const size_t Autoload::phpMembers = ' . count($class2File) . ";\n");
+fwrite($fp, 'const std::string Autoload::phpMembersStr = "' . count($class2File) . "\";\n");
 fclose($fp);
 
 // fwrite(STDOUT, PHP_EOL);
