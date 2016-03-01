@@ -1,33 +1,69 @@
 /**
-	Compare strings starting with the tail.
+	Compare strings starting with the last charcters in the strings, then the first characters,
+	then the 2nd to last characters, then the 2nd charcters, etc.
 */
 
 #include "RLess.h"
 
 using namespace std;
 
-//	if 'a' is less than 'b' then return true, if equal or greater retrun false
+//	if A is less than B then return true, if equal or greater retrun false
 bool RLess::operator()(const char* a, const char* b) const
 {
-	const char* ap = (char*) a + strlen(a);
-	const char* bp = (char*) b + strlen(b);
+	int aLen = strlen(a), bLen = strlen(b);
 	
-	while ( ap>a && bp>b ) {
-		ap--; bp--;
-		
-		if (*ap < *bp)
-			return true;
-			
-		if (*ap > *bp)
-			return false;
-		//	if equal then continue checking
+	//	If length of B is zero then A can't be less than B.
+	if ( bLen == 0 ) {
+		return false;
 	}
 	
-	//	If 'b' still isn't finished then 'a' must be the one the ended the 'while' loop and is therefore lesser.
-	if ( bp>b ) {
+	//	If we got here then the length of B is greater than zero.
+	if ( aLen == 0 ) {
 		return true;
 	}
 	
-	//	either 'a==b' or 'a' is longer than 'b'
+	const char* aBeg = const_cast<char*>(a - 1);
+	const char* bBeg = const_cast<char*>(b - 1);
+	const char* aEnd = const_cast<char*>(a + aLen);
+	const char* bEnd = const_cast<char*>(b + bLen);
+	
+	while ( aBeg!=aEnd && bBeg!=bEnd ) {
+		aEnd--; bEnd--;
+		if (*aEnd < *bEnd) {
+			return true;
+		}
+		
+		if (*aEnd > *bEnd) {
+			return false;
+		}
+		//	if equal then continue checking
+		
+		//	if B is finished then no matter what A is return false
+		if ( bBeg==bEnd ) {
+			return false;
+		}
+		
+		aBeg++; bBeg++;
+		if (*aBeg < *bBeg) {
+			return true;
+		}
+		
+		if (*aBeg > *bBeg) {
+			return false;
+		}
+		//	if equal then continue checking
+		
+		//	if B is finished and no matter what A is, then return false
+		if ( bBeg==bEnd ) {
+			return false;
+		}
+	}
+	
+	//	If B still isn't finished then A must be the one that ended the 'while' loop and is therefore lesser.
+	if ( bBeg<bEnd ) {
+		return true;
+	}
+	
+	//	either 'a==b' or A is longer than B
 	return false;
 }

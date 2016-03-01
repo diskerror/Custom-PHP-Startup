@@ -2,5 +2,5 @@
 // #warning NOTE: Precompiled header file being built.
 
 #include <phpcpp.h>
-#include <map>
+#include <unordered_map>
 #include <string.h>

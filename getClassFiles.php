@@ -159,8 +159,6 @@ foreach ( $class2File as $c=>$p ) {
 fseek($fp, -2, SEEK_END);
 
 fwrite($fp, "\n};\n");
-fwrite($fp, 'const size_t Autoload::phpMembers = ' . count($class2File) . ";\n");
-fwrite($fp, 'const std::string Autoload::phpMembersStr = "' . count($class2File) . "\";\n");
 fclose($fp);
 
 // fwrite(STDOUT, PHP_EOL);

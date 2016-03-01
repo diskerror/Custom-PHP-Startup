@@ -20,8 +20,3 @@ Php::Value Autoload::getFile(Php::Parameters &params)
 		return "";
 	}
 }
-
-Php::Value Autoload::collisions()
-{
-	return (int32_t) (phpMembers - _val.size());
-}
