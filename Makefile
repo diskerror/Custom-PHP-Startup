@@ -19,7 +19,6 @@ PHP_SEARCH_PATHS = \
 
 
 ################################################################################
-PHPE			= /etc/php5
 EXTENSION_DIR	= $(shell php-config --extension-dir)
 EXTENSION 		= $(EXTENSION_NAME).so
 INI 			= $(EXTENSION_NAME).ini
@@ -74,7 +73,7 @@ obj/main.o: main.cp Autoload.h
 
 ################################################################################
 # Installation and cleanup. (tested on Debian 8 and CentOS 6)
-install:
+install: $(EXTENSION)
 	cp -f $(EXTENSION) $(EXTENSION_DIR)
 	chmod 644 $(EXTENSION_DIR)/$(EXTENSION)
 	if [ -d /etc/php5/mods-available/ ]; then \

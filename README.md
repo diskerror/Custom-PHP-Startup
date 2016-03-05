@@ -21,7 +21,7 @@ Regular PHP "defines" can be compiled into the extension where they are ready to
 Aids in the creation of "php.ini" file values for retrieval with ```$v1 = ini_get('project.var1');```. These are about seven times slower than the "defines" above but are useful when values need to be changed often and recompiling this extension is not convienent.
 
 ## Requirements For Compiling
-GCC, Make, and the standard libraries are required to build and install the custom extension, as is the PHP development libraries, and the Copernica [PHP-CPP](http://www.phpcpp.com) API installed with the command ```make release``` rather than just ```make``` which creates a version for debugging.
+GCC, Make, and the standard libraries are required to build and install the custom extension, as is the PHP development libraries.
 
 CentOS 6 requires at least devtoolset-2 to compile PHP-CPP.
 ```
@@ -31,3 +31,10 @@ CentOS 6 requires at least devtoolset-2 to compile PHP-CPP.
  > scl enable devtoolset-2 bash
 ```
 
+###PHP-CPP
+The [Copernica](http://www.copernica.com) PHP-CPP library is used to build this extension.
+```
+ > make release
+ > sudo make install
+```
+Just using ```make``` will create a slower debug version.
