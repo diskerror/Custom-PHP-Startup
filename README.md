@@ -1,3 +1,5 @@
+WARNING: This might ony show off my lack of understanding of internal PHP. ;-)
+
 # Custom Startup Extension
 This PHP extension assists the moving of typical PHP script startup routines and configuration data into a PHP extension (.so) where they are ready to be used (M INIT) before a web script is run (R INIT). This project was set up so that customizing the data need only be performed in one place even if they are needed in more than one file.
 
