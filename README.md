@@ -33,7 +33,7 @@ CentOS 6 requires at least devtoolset-2 to compile PHP-CPP.
  > scl enable devtoolset-2 bash
 ```
 
-###PHP-CPP
+### PHP-CPP
 The [Copernica](http://www.copernica.com) PHP-CPP library is used to build this extension.
 ```
  > make release
